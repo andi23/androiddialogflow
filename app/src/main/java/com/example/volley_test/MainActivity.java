@@ -105,6 +105,17 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(String response) {
                         Log.d("Response", response.toString());
+                        try {
+                            JSONObject jsonObject = new JSONObject(response);
+                            JSONObject queryResult = jsonObject.getJSONObject("queryResult");
+                            String queryText = queryResult.getString("queryText");
+                            String fulfillmentText = queryResult.getString("fulfillmentText");
+
+                            mTextViewResult.append( queryText  + ", " + fulfillmentText + "\n\n");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
                     }
                 }, new Response.ErrorListener() {
 
@@ -127,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String,String> headers=new HashMap<String,String>();
-                headers.put("Authorization","Bearer ya29.c.Elp_B-8H7ZC6hqPJYDAJS5OED4tMoQktUqHjSCNKoyutYmSNai-_h9gMpSPXjscwpMvBPwT6x2uFnHyQ_V9JpUrwXP4FSQ3WV3ujeZIl83xXZ0u1SJJerNxTrL4");
+                headers.put("Authorization","Bearer ya29.c.Elp_B2vxiq1m1FRGbfBqcCkFX_kFcB9nNXP5w5dm21pA5ShG4grG7jsRgH77oWSFAHkLgucCSSSUuTyqgWHOp1yS6TJjdnbHgO0xXj8WIjreIP0I9RmYGUnlwvQ");
                 headers.put("Content-Type","application/json; charset=utf-8");
                 return headers;
             }
