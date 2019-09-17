@@ -2,7 +2,12 @@ package com.example.volley_test;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -26,6 +31,8 @@ import android.util.Log;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
+
+import android.media.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -110,8 +117,55 @@ public class MainActivity extends AppCompatActivity {
                             JSONObject queryResult = jsonObject.getJSONObject("queryResult");
                             String queryText = queryResult.getString("queryText");
                             String fulfillmentText = queryResult.getString("fulfillmentText");
+                            String audioencoded = jsonObject.getString("outputAudio");
+                            Log.d("the audio", audioencoded);
 
-                            mTextViewResult.append( queryText  + ", " + fulfillmentText + "\n\n");
+                            mTextViewResult.append( queryText  + ", " + fulfillmentText + ", " + audioencoded + "\n\n");
+
+                            int outputBufferSize = AudioTrack.getMinBufferSize(24000,
+                                    AudioFormat.CHANNEL_IN_STEREO,
+                                    AudioFormat.ENCODING_PCM_16BIT);
+
+//                            AudioTrack voice = new AudioTrack(AudioManager.USE_DEFAULT_STREAM_TYPE,
+//                                    16000, AudioFormat.CHANNEL_OUT_STEREO,
+//                                    AudioFormat.ENCODING_PCM_16BIT, outputBufferSize,
+//                                    AudioTrack.MODE_STREAM);
+                            AudioTrack voice = new AudioTrack.Builder()
+                                    .setAudioAttributes(new AudioAttributes.Builder()
+                                            .setUsage(AudioAttributes.USAGE_ALARM)
+                                            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                                            .build())
+                                    .setAudioFormat(new AudioFormat.Builder()
+                                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                                            .setSampleRate(24000)
+                                            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                                            .build())
+                                    .setBufferSizeInBytes(outputBufferSize)
+                                    .build();
+
+//                            int minBuffSize = 44100;
+//                            int maxJitter = AudioTrack.getMinBufferSize(8000, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+//                            AudioTrack voice = new AudioTrack.Builder()
+//                                    .setAudioAttributes(new AudioAttributes.Builder()
+//                                            .setUsage(AudioAttributes.USAGE_ALARM)
+//                                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+//                                            .build())
+//                                    .setAudioFormat(new AudioFormat.Builder()
+//                                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+//                                            .setSampleRate(44100)
+//                                            .setChannelMask(AudioFormat.CHANNEL_OUT_STEREO)
+//                                            .build())
+//                                    .setBufferSizeInBytes(minBuffSize)
+//                                    .build();
+//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                                voice.setVolume(100);
+//                            }
+                            voice.play();
+
+                            byte[] data = Base64.decode(audioencoded, Base64.DEFAULT);
+
+                            int iRes = voice.write(data, 0, data.length);
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -138,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String,String> headers=new HashMap<String,String>();
-                headers.put("Authorization","Bearer ya29.c.Elp_B2vxiq1m1FRGbfBqcCkFX_kFcB9nNXP5w5dm21pA5ShG4grG7jsRgH77oWSFAHkLgucCSSSUuTyqgWHOp1yS6TJjdnbHgO0xXj8WIjreIP0I9RmYGUnlwvQ");
+                headers.put("Authorization","Bearer ya29.c.ElqGB7Z1asKlr-quxdTvmN0jpSIKpyTSHifZqvv6JkJXA_XUEiyOKYzmPWPTJlVKaC7x3yhPL-Efg62Vx8B1M12Kgl4NZxhY5sHWcHcWq2y2MxM0_hsQmctggf8");
                 headers.put("Content-Type","application/json; charset=utf-8");
                 return headers;
             }
