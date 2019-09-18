@@ -34,6 +34,8 @@ import java.util.Map;
 
 import android.media.*;
 
+import static android.util.Base64.DEFAULT;
+
 public class MainActivity extends AppCompatActivity {
 
     private TextView mTextViewResult;
@@ -122,27 +124,20 @@ public class MainActivity extends AppCompatActivity {
 
                             mTextViewResult.append( queryText  + ", " + fulfillmentText + ", " + audioencoded + "\n\n");
 
-                            int outputBufferSize = AudioTrack.getMinBufferSize(24000,
-                                    AudioFormat.CHANNEL_IN_STEREO,
-                                    AudioFormat.ENCODING_PCM_16BIT);
 
-//                            AudioTrack voice = new AudioTrack(AudioManager.USE_DEFAULT_STREAM_TYPE,
-//                                    16000, AudioFormat.CHANNEL_OUT_STEREO,
-//                                    AudioFormat.ENCODING_PCM_16BIT, outputBufferSize,
-//                                    AudioTrack.MODE_STREAM);
+                            int intSize = android.media.AudioTrack.getMinBufferSize(24000, AudioFormat.CHANNEL_OUT_MONO,
+                                    AudioFormat.ENCODING_PCM_16BIT);
                             AudioTrack voice = new AudioTrack.Builder()
                                     .setAudioAttributes(new AudioAttributes.Builder()
-                                            .setUsage(AudioAttributes.USAGE_ALARM)
-                                            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                                            .setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN)
                                             .build())
                                     .setAudioFormat(new AudioFormat.Builder()
                                             .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                                            .setSampleRate(24000)
+                                            .setSampleRate(AudioFormat.SAMPLE_RATE_UNSPECIFIED)
                                             .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
                                             .build())
-                                    .setBufferSizeInBytes(outputBufferSize)
                                     .build();
-
 //                            int minBuffSize = 44100;
 //                            int maxJitter = AudioTrack.getMinBufferSize(8000, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
 //                            AudioTrack voice = new AudioTrack.Builder()
@@ -162,11 +157,15 @@ public class MainActivity extends AppCompatActivity {
 //                            }
                             voice.play();
 
-                            byte[] data = Base64.decode(audioencoded, Base64.DEFAULT);
+                            byte[] data = Base64.decode(audioencoded, DEFAULT);
 
                             int iRes = voice.write(data, 0, data.length);
+                            // test crash
+//                            throw new RuntimeException("Crash!");
 
-                        } catch (JSONException e) {
+                        } catch (Exception e) {
+                            Log.d("error happened", "here");
+                            Log.e("MYAPP", "exception", e);
                             e.printStackTrace();
                         }
 
@@ -192,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String,String> headers=new HashMap<String,String>();
-                headers.put("Authorization","Bearer ya29.c.ElqGB7Z1asKlr-quxdTvmN0jpSIKpyTSHifZqvv6JkJXA_XUEiyOKYzmPWPTJlVKaC7x3yhPL-Efg62Vx8B1M12Kgl4NZxhY5sHWcHcWq2y2MxM0_hsQmctggf8");
+                headers.put("Authorization","Bearer ya29.c.ElqHB25POVnZXLZzkQNaibpRD0DcI336_Liu_2AM4y_mUWrsz-rUlLA2ZV3O8xpFtftnMDDzx2Bdpzat9m-gTMjKVsLyrjPu2J3KQTgLSJHaPgojlOcFhSw8t5M");
                 headers.put("Content-Type","application/json; charset=utf-8");
                 return headers;
             }
