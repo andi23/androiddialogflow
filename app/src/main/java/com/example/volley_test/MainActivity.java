@@ -28,11 +28,13 @@ import org.json.JSONObject;
 
 import android.util.Log;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
 import android.media.*;
+import android.widget.Toast;
 
 import static android.util.Base64.DEFAULT;
 
@@ -88,6 +90,46 @@ public class MainActivity extends AppCompatActivity {
         mQueue.add(request);
     }
 
+    public void playMedia(String base64String) {
+        try{
+            String url = "data:audio/mp3;base64,"+base64String;
+            MediaPlayer mediaPlayer = new MediaPlayer();
+
+            try {
+                mediaPlayer.setDataSource(url);
+                mediaPlayer.prepareAsync();
+                mediaPlayer.setVolume(100f, 100f);
+                mediaPlayer.setLooping(false);
+            } catch (IllegalArgumentException e) {
+                Toast.makeText(getApplicationContext(), "You might not set the DataSource correctly!", Toast.LENGTH_LONG).show();
+            } catch (SecurityException e) {
+                Toast.makeText(getApplicationContext(), "You might not set the DataSource correctly!", Toast.LENGTH_LONG).show();
+            } catch (IllegalStateException e) {
+                Toast.makeText(getApplicationContext(), "You might not set the DataSource correctly!", Toast.LENGTH_LONG).show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer player) {
+                    player.start();
+                }
+            });
+
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    mp.stop();
+                    mp.release();
+                }
+            });
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
     private void jsonPostParse() {
         String URL = "https://dialogflow.googleapis.com/v2/projects/oceanic-student-233500" +
                 "/agent/sessions/49534bcd-d1a7-7d9e-20c5-c58800d9c1a0:detectIntent";
@@ -124,44 +166,7 @@ public class MainActivity extends AppCompatActivity {
 
                             mTextViewResult.append( queryText  + ", " + fulfillmentText + ", " + audioencoded + "\n\n");
 
-
-                            int intSize = android.media.AudioTrack.getMinBufferSize(24000, AudioFormat.CHANNEL_OUT_MONO,
-                                    AudioFormat.ENCODING_PCM_16BIT);
-                            AudioTrack voice = new AudioTrack.Builder()
-                                    .setAudioAttributes(new AudioAttributes.Builder()
-                                            .setUsage(AudioAttributes.USAGE_MEDIA)
-                                            .setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN)
-                                            .build())
-                                    .setAudioFormat(new AudioFormat.Builder()
-                                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                                            .setSampleRate(AudioFormat.SAMPLE_RATE_UNSPECIFIED)
-                                            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                                            .build())
-                                    .build();
-//                            int minBuffSize = 44100;
-//                            int maxJitter = AudioTrack.getMinBufferSize(8000, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
-//                            AudioTrack voice = new AudioTrack.Builder()
-//                                    .setAudioAttributes(new AudioAttributes.Builder()
-//                                            .setUsage(AudioAttributes.USAGE_ALARM)
-//                                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-//                                            .build())
-//                                    .setAudioFormat(new AudioFormat.Builder()
-//                                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-//                                            .setSampleRate(44100)
-//                                            .setChannelMask(AudioFormat.CHANNEL_OUT_STEREO)
-//                                            .build())
-//                                    .setBufferSizeInBytes(minBuffSize)
-//                                    .build();
-//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                                voice.setVolume(100);
-//                            }
-                            voice.play();
-
-                            byte[] data = Base64.decode(audioencoded, DEFAULT);
-
-                            int iRes = voice.write(data, 0, data.length);
-                            // test crash
-//                            throw new RuntimeException("Crash!");
+                            playMedia(audioencoded);
 
                         } catch (Exception e) {
                             Log.d("error happened", "here");
@@ -191,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String,String> headers=new HashMap<String,String>();
-                headers.put("Authorization","Bearer ya29.c.ElqHB25POVnZXLZzkQNaibpRD0DcI336_Liu_2AM4y_mUWrsz-rUlLA2ZV3O8xpFtftnMDDzx2Bdpzat9m-gTMjKVsLyrjPu2J3KQTgLSJHaPgojlOcFhSw8t5M");
+                headers.put("Authorization","Bearer ya29.c.Kl6MB_xEAvedoBTmggtTmYFLhBAIsxOsx5pZOjYSH7pgPMMsv6OyDUEGwqZ5ieXGBFq6r74UApp5dHZN3-KVuta7pvo-VX7qyJf5sUpi6seD2RFEv7g7Ip1xexCVsWDu");
                 headers.put("Content-Type","application/json; charset=utf-8");
                 return headers;
             }
@@ -200,4 +205,5 @@ public class MainActivity extends AppCompatActivity {
 
         mQueue.add(jsonObjRequest);
     }
+
 }
